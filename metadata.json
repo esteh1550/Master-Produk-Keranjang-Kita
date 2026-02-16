@@ -1,0 +1,7 @@
+{
+  "name": "Master Produk Keranjang Kita",
+  "description": "Aplikasi input master produk supermarket dengan barcode scanner dan integrasi Supabase.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
