@@ -13,16 +13,18 @@ function App() {
   const [isLoadingExternal, setIsLoadingExternal] = useState(false);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
-  // Logic to handle scan
-  const handleScanSuccess = async (barcode: string) => {
-    // If we just scanned this, ignore to prevent flickers
-    if (currentProduct.barcode === barcode) return;
+  // Logic to handle scan or manual lookup
+  const handleBarcodeLookup = async (barcode: string) => {
+    // If we just scanned/looked up this, and it is fully loaded, maybe we don't need to do anything?
+    // However, for manual entry, forcing a refresh is often good.
+    // We only skip if currently loading to prevent race conditions.
+    if (isLoadingExternal) return;
 
     setIsLoadingExternal(true);
     setNotification(null);
 
     // Initial basic data while loading
-    setCurrentProduct({ barcode });
+    setCurrentProduct(prev => ({ ...prev, barcode }));
 
     try {
       const result = await getProductByBarcode(barcode);
@@ -155,7 +157,7 @@ function App() {
         
         {/* Scanner Section */}
         <section>
-          <BarcodeScanner onScanSuccess={handleScanSuccess} />
+          <BarcodeScanner onScanSuccess={handleBarcodeLookup} />
         </section>
 
         {/* Notification Toast (Inline for Mobile) */}
@@ -174,6 +176,7 @@ function App() {
             initialData={currentProduct} 
             isLoadingExternal={isLoadingExternal}
             onSubmit={handleSave}
+            onSearch={handleBarcodeLookup}
           />
         </section>
 

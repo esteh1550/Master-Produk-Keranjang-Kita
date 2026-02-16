@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Product, ProductCategory } from '../types';
-import { Save, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Save, Loader2, Search } from 'lucide-react';
 
 interface ProductFormProps {
   initialData: Partial<Product>;
   isLoadingExternal: boolean;
   onSubmit: (data: Product) => Promise<void>;
+  onSearch: (barcode: string) => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ initialData, isLoadingExternal, onSubmit }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, isLoadingExternal, onSubmit, onSearch }) => {
   const [formData, setFormData] = useState<Partial<Product>>({
     barcode: '',
     nama_produk: '',
@@ -63,6 +64,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isLoadingExterna
     }
   };
 
+  const handleBarcodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (formData.barcode) {
+        onSearch(formData.barcode);
+      }
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
       <div className="flex items-center gap-2 mb-2">
@@ -70,16 +80,28 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, isLoadingExterna
          {isLoadingExternal && <span className="text-xs text-royal-500 animate-pulse flex items-center gap-1"><Loader2 size={12} className="animate-spin"/> Mencari data online...</span>}
       </div>
 
-      {/* Barcode (Read Only) */}
+      {/* Barcode Input Group */}
       <div>
         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Barcode</label>
-        <input 
-          type="text" 
-          value={formData.barcode || ''} 
-          disabled 
-          className="w-full bg-gray-100 text-gray-600 border border-gray-200 rounded-lg px-3 py-2 font-mono text-sm"
-          placeholder="Scan barcode di atas..."
-        />
+        <div className="flex gap-2">
+          <input 
+            type="text" 
+            value={formData.barcode || ''} 
+            onChange={(e) => setFormData({...formData, barcode: e.target.value})}
+            onKeyDown={handleBarcodeKeyDown}
+            className="flex-1 bg-gray-50 text-gray-900 border border-gray-300 focus:border-royal-500 focus:ring-2 focus:ring-royal-500/20 rounded-lg px-3 py-2 font-mono text-sm outline-none transition-all"
+            placeholder="Scan atau ketik barcode..."
+          />
+          <button
+            type="button"
+            onClick={() => formData.barcode && onSearch(formData.barcode)}
+            className="bg-royal-500 hover:bg-royal-600 text-white p-2.5 rounded-lg transition-colors shadow-sm"
+            title="Cari Barcode"
+          >
+            <Search size={18} />
+          </button>
+        </div>
+        <p className="text-[10px] text-gray-400 mt-1">Tekan Enter atau tombol cari untuk cek data</p>
       </div>
 
       {/* Nama Produk */}
